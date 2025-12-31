@@ -1,6 +1,6 @@
 ---
 allowed-tools: Task, Read, Write, Bash(mkdir:*), Bash(ls:*), Bash(find:*), Glob
-description: Start collaboration with two subagents - one watching, one polling (user)
+description: Start introspection - watch current session and poll for feedback (user)
 ---
 
 ## Your task
@@ -85,7 +85,7 @@ prompt: |
 
 Display:
 ```
-COLLABORATION STARTED
+INTROSPECTION STARTED
 =====================
 
 Session: <current-session-path>

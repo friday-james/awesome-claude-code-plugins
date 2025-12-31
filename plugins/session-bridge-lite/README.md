@@ -46,11 +46,11 @@ cp -r plugins/session-bridge-lite/* ~/.claude/plugins/cache/awesome-claude-code-
 
 ## Commands
 
-### /collaborate
-Start collaboration mode - spawns background agents to watch the current session and poll for feedback. This is the easiest way to get started.
+### /introspect
+Start introspection mode - spawns background agents to watch the current session and poll for feedback. This is the easiest way to get started.
 
 ```
-/collaborate              # Watch current session, poll for feedback
+/introspect              # Watch current session, poll for feedback
 ```
 
 This spawns two background agents:
