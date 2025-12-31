@@ -12,24 +12,50 @@ Uses only Claude Code's built-in tools (Read, Write, Bash) to enable collaborati
 
 ## Installation
 
-### Option 1: Copy to plugins folder
+### Option 1: Install from marketplace (Recommended)
 
 ```bash
-# Create plugins directory if needed
-mkdir -p ~/.claude/plugins
+# Add the marketplace (if not already added)
+/install-marketplace https://github.com/friday-james/awesome-claude-code-plugins
 
-# Copy the plugin
-cp -r session-bridge-lite ~/.claude/plugins/
+# Install the plugin
+/install session-bridge-lite@awesome-claude-code-plugins
 ```
 
-### Option 2: Clone from repo
+### Option 2: Copy commands to ~/.claude/commands/
 
 ```bash
-git clone https://github.com/ccplugins/awesome-claude-code-plugins.git
-# Plugin is at: plugins/session-bridge-lite/
+# Clone the repo
+git clone https://github.com/friday-james/awesome-claude-code-plugins.git
+
+# Copy commands
+cp awesome-claude-code-plugins/plugins/session-bridge-lite/commands/*.md ~/.claude/commands/
+```
+
+### Option 3: Manual plugin install
+
+```bash
+# Create cache directory
+mkdir -p ~/.claude/plugins/cache/awesome-claude-code-plugins/session-bridge-lite/1.0.0
+
+# Copy plugin files
+cp -r plugins/session-bridge-lite/* ~/.claude/plugins/cache/awesome-claude-code-plugins/session-bridge-lite/1.0.0/
+
+# Add to installed_plugins.json (requires manual edit)
 ```
 
 ## Commands
+
+### /collaborate
+Start collaboration mode - spawns background agents to watch the current session and poll for feedback. This is the easiest way to get started.
+
+```
+/collaborate              # Watch current session, poll for feedback
+```
+
+This spawns two background agents:
+1. **Watcher** - Monitors current session activity (so others can observe)
+2. **Poller** - Checks for incoming feedback from other sessions
 
 ### /watch
 Watch another Claude session by reading its JSONL file.
@@ -168,8 +194,8 @@ Consider adding rate limiting to the login endpoint
 
 ## Limitations
 
-- Polling is manual (no background watching)
-- Session ID detection may require user input
+- Background agents run for ~5 minutes then stop (restart with `/collaborate`)
+- Session ID detection may require user input for `/watch` and `/send`
 - Large JSONL files may be slow to parse
 
 ## License

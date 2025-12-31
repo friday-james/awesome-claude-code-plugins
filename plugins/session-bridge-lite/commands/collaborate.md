@@ -1,14 +1,14 @@
 ---
-allowed-tools: Task, Read, Write, Bash(mkdir:*), Bash(ls:*), Glob
-description: Start collaboration with two subagents - one watching, one polling
+allowed-tools: Task, Read, Write, Bash(mkdir:*), Bash(ls:*), Bash(find:*), Glob
+description: Start collaboration with two subagents - one watching, one polling (user)
 ---
 
 ## Your task
 
-Spawn TWO subagents to enable active collaboration:
+Spawn TWO subagents to enable active collaboration. By default, watch the CURRENT session so other Claude instances can observe this session's activity.
 
-1. **Watcher Agent** - Continuously monitors a session's JSONL for new activity
-2. **Poller Agent** - Continuously polls the feedback queue and reports messages
+1. **Watcher Agent** - Monitors the current session's JSONL for activity (so others can watch us)
+2. **Poller Agent** - Polls for incoming feedback from other sessions
 
 ### Step 1: Setup
 
@@ -17,32 +17,27 @@ First, ensure the bridge directory exists:
 mkdir -p ~/.claude-bridge-lite/feedback
 ```
 
-### Step 2: Find target session
+### Step 2: Find current session
 
-If user provided a session path or index, use that.
-Otherwise, list available sessions:
+Find the current session's JSONL path. Look for the most recently modified .jsonl file in the current project's folder:
 ```bash
-ls -t ~/.claude/projects/*/*.jsonl 2>/dev/null | head -10
+find ~/.claude/projects -name "*.jsonl" -type f -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-
 ```
 
-Ask user which session to collaborate with.
+This is BOTH the session to watch AND the session to receive feedback on.
 
-### Step 3: Get current session info
-
-Find the current session's JSONL path to know where to receive feedback.
-
-### Step 4: Spawn BOTH subagents in parallel
+### Step 3: Spawn BOTH subagents in parallel
 
 Use the Task tool to spawn TWO agents simultaneously in a single response:
 
-**Agent 1 - Watcher:**
+**Agent 1 - Watcher (monitors current session for other collaborators to see):**
 ```
 subagent_type: general-purpose
 run_in_background: true
 prompt: |
-  You are a SESSION WATCHER agent. Your job is to monitor a Claude session for new activity.
+  You are a SESSION WATCHER agent. Your job is to monitor this Claude session for new activity.
 
-  Target session: <SESSION_PATH>
+  Target session: <CURRENT_SESSION_PATH>
 
   Instructions:
   1. Read the session JSONL file using: tail -50 <SESSION_PATH>
@@ -62,7 +57,7 @@ prompt: |
   Continue monitoring for 5 minutes or until 10 updates, then report final summary.
 ```
 
-**Agent 2 - Poller:**
+**Agent 2 - Poller (checks for incoming feedback):**
 ```
 subagent_type: general-purpose
 run_in_background: true
@@ -90,24 +85,28 @@ prompt: |
   - Types: suggestion (x), warning (y), etc.
 ```
 
-### Step 5: Confirm launch
+### Step 4: Confirm launch
 
 Display:
 ```
 COLLABORATION STARTED
 =====================
 
-Watcher Agent: Monitoring <session-path>
-Poller Agent: Listening for feedback
+Session: <current-session-path>
+Session ID: <current-session-id>
 
-Your session ID: <current-session-id>
-Share this with collaborators so they can send you feedback.
+Watcher Agent: Broadcasting activity from this session
+Poller Agent: Listening for incoming feedback
+
+Share your session ID with collaborators:
+  They can watch with: /watch <session-id>
+  They can send feedback with: /send <message>
 
 The agents are running in the background.
-Use TaskOutput to check their progress, or wait for notifications.
+Use TaskOutput to check their progress.
 
 Commands while collaborating:
-  /send <message>  - Send feedback to watched session
+  /send <message>  - Send feedback to another session
   /status          - Check bridge status
 ```
 
