@@ -53,13 +53,11 @@ Start introspection mode - spawns background agents to watch the current session
 /introspect              # Watch current session, poll for feedback
 ```
 
-This spawns two background agents that run in self-perpetuating chains:
-1. **Watcher** - Monitors current session activity (so others can observe)
-2. **Poller** - Checks for incoming feedback from other sessions
+This spawns two background agents:
+1. **Watcher** - Monitors current session activity (~5 min)
+2. **Poller** - Checks for incoming feedback (~3 min)
 
-Agents spawn replacements **immediately** when they detect activity/feedback:
-- Get real-time notifications in your session
-- If idle for 3-5 minutes, agents auto-restart anyway
+When agents complete, you'll get a notification. Run `/introspect` again to restart.
 
 ### /watch
 Watch another Claude session by reading its JSONL file.
@@ -198,9 +196,7 @@ Consider adding rate limiting to the login endpoint
 
 ## Limitations
 
-- Agents complete immediately upon detecting activity (you get real-time notifications)
-- Each agent spawns a replacement before completing (continuous monitoring)
-- If idle, agents restart every 3-5 minutes
+- Agents run for 3-5 minutes then complete (run `/introspect` again to restart)
 - Session ID detection may require user input for `/watch` and `/send`
 - Large JSONL files may be slow to parse
 
