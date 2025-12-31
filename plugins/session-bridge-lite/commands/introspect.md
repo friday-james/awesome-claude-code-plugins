@@ -5,7 +5,7 @@ description: Start introspection - watch current session and poll for feedback (
 
 ## Your task
 
-Spawn TWO subagents to monitor this session. When agents complete, you'll get a notification - run `/introspect` again to restart monitoring.
+Spawn TWO subagents to monitor this session.
 
 ### Step 1: Setup
 
@@ -19,7 +19,7 @@ mkdir -p ~/.claude-bridge-lite/feedback
 find ~/.claude/projects -name "*.jsonl" -type f -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-
 ```
 
-### Step 3: Spawn BOTH subagents in parallel (use model: haiku for efficiency)
+### Step 3: Spawn BOTH subagents in parallel (use model: haiku)
 
 **Agent 1 - Watcher:**
 ```
@@ -27,17 +27,15 @@ subagent_type: general-purpose
 model: haiku
 run_in_background: true
 prompt: |
-  SESSION WATCHER
+  SESSION WATCHER - Stream with tail -f
 
   Session: <SESSION_PATH>
 
-  Loop 10 times (every 30 seconds):
-  1. Run: tail -100 <SESSION_PATH>
-  2. Briefly summarize what you see (last user message, last assistant action)
-  3. Sleep 30 seconds
-  4. Repeat
+  Run: tail -f <SESSION_PATH>
 
-  After 10 iterations (~5 min), complete with final summary.
+  This streams new lines as they're added. Analyze each line as it comes in.
+  Summarize activity (user messages, assistant actions, tool calls).
+  Run forever.
 ```
 
 **Agent 2 - Poller:**
@@ -46,31 +44,33 @@ subagent_type: general-purpose
 model: haiku
 run_in_background: true
 prompt: |
-  FEEDBACK POLLER
+  FEEDBACK POLLER - Run forever
 
   Feedback file: ~/.claude-bridge-lite/feedback/<SESSION_ID>.json
 
-  Loop 20 times (every 10 seconds):
-  1. Check if file exists and read it
-  2. If non-empty array: report content, clear file with echo '[]' > <file>, complete
-  3. If empty/missing: sleep 10 seconds, repeat
-
-  After 20 checks (~3 min), complete with "No feedback received"
+  Loop forever:
+  1. Read the feedback file
+  2. If non-empty array found:
+     - Print: === FEEDBACK RECEIVED === with content
+     - Clear file: echo '[]' > <file>
+  3. sleep 10
+  4. Repeat forever (never exit)
 ```
 
 ### Step 4: Display
 
 ```
-INTROSPECTION STARTED (haiku)
-=============================
+INTROSPECTION STARTED (haiku, forever)
+======================================
 Session ID: <id>
 
-Watcher: tail -100 every 30s for ~5 min
-Poller: Checking every 10s for ~3 min
+Watcher: tail -f (streaming)
+Poller: Checking every 10s
 
-Run /introspect again when agents complete.
+Use /tasks to see agents, kill to stop.
 ```
 
 ### Important
 
-Spawn BOTH agents in parallel with `run_in_background: true` and `model: haiku`.
+Spawn BOTH agents with `run_in_background: true` and `model: haiku`.
+They run forever until manually killed.
