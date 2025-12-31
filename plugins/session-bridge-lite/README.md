@@ -194,7 +194,7 @@ Consider adding rate limiting to the login endpoint
 
 ## Limitations
 
-- Background agents run for ~5 minutes then stop (restart with `/collaborate`)
+- Background agents run forever until manually stopped (use `/tasks` to see, kill with task ID)
 - Session ID detection may require user input for `/watch` and `/send`
 - Large JSONL files may be slow to parse
 

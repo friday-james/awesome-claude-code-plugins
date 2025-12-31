@@ -54,7 +54,7 @@ prompt: |
   Assistant: <summary>
   Tools: <list>
 
-  Continue monitoring for 5 minutes or until 10 updates, then report final summary.
+  Continue monitoring FOREVER. Never stop. Keep checking every 30 seconds indefinitely until the user manually stops you.
 ```
 
 **Agent 2 - Poller (checks for incoming feedback):**
@@ -76,13 +76,9 @@ prompt: |
      Message: <content>
   4. After reading, clear the file (write empty array [])
   5. Wait 10 seconds and check again
-  6. Repeat for 5 minutes or until 20 checks
+  6. Repeat FOREVER. Never stop polling until the user manually stops you.
 
   If feedback is received, IMMEDIATELY report it clearly so the main thread sees it.
-
-  When done, provide summary:
-  - Total feedback received: N
-  - Types: suggestion (x), warning (y), etc.
 ```
 
 ### Step 4: Confirm launch
