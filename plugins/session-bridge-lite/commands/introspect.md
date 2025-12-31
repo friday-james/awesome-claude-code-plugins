@@ -54,7 +54,14 @@ prompt: |
   Assistant: <summary>
   Tools: <list>
 
-  Continue monitoring FOREVER. Never stop. Keep checking every 30 seconds indefinitely until the user manually stops you.
+  5. After 10 checks (5 minutes), summarize what you observed
+  6. BEFORE completing, spawn a new watcher agent to continue monitoring:
+     - Use Task tool with subagent_type: general-purpose, run_in_background: true
+     - Give it the EXACT same instructions you received
+     - Pass the same session path: <CURRENT_SESSION_PATH>
+  7. After spawning replacement, complete and return your summary
+
+  This creates a self-perpetuating chain of watchers.
 ```
 
 **Agent 2 - Poller (checks for incoming feedback):**
@@ -76,9 +83,14 @@ prompt: |
      Message: <content>
   4. After reading, clear the file (write empty array [])
   5. Wait 10 seconds and check again
-  6. Repeat FOREVER. Never stop polling until the user manually stops you.
+  6. After 20 checks (~3 minutes), summarize results
+  7. BEFORE completing, spawn a new poller agent to continue:
+     - Use Task tool with subagent_type: general-purpose, run_in_background: true
+     - Give it the EXACT same instructions you received
+     - Pass the same feedback file: ~/.claude-bridge-lite/feedback/<CURRENT_SESSION_ID>.json
+  8. After spawning replacement, complete and return your summary
 
-  If feedback is received, IMMEDIATELY report it clearly so the main thread sees it.
+  This creates a self-perpetuating chain of pollers.
 ```
 
 ### Step 4: Confirm launch
@@ -98,8 +110,10 @@ Share your session ID with collaborators:
   They can watch with: /watch <session-id>
   They can send feedback with: /send <message>
 
-The agents are running in the background.
-Use TaskOutput to check their progress.
+The agents run in self-perpetuating chains:
+- Each agent works for ~3-5 minutes
+- Before completing, spawns a replacement
+- You'll see periodic reports as agents complete
 
 Commands while collaborating:
   /send <message>  - Send feedback to another session
@@ -110,3 +124,5 @@ Commands while collaborating:
 
 You MUST call the Task tool TWICE in a SINGLE response to spawn both agents in parallel.
 Use `run_in_background: true` for both agents so they run concurrently.
+
+The agents will spawn replacements indefinitely, creating continuous monitoring.
