@@ -57,7 +57,9 @@ This spawns two background agents that run in self-perpetuating chains:
 1. **Watcher** - Monitors current session activity (so others can observe)
 2. **Poller** - Checks for incoming feedback from other sessions
 
-Each agent runs for 3-5 minutes, then spawns a replacement before completing. You'll see periodic reports as agents finish their shifts.
+Agents spawn replacements **immediately** when they detect activity/feedback:
+- Get real-time notifications in your session
+- If idle for 3-5 minutes, agents auto-restart anyway
 
 ### /watch
 Watch another Claude session by reading its JSONL file.
@@ -196,8 +198,9 @@ Consider adding rate limiting to the login endpoint
 
 ## Limitations
 
-- Agents run in self-perpetuating chains (each spawns a replacement before completing)
-- You'll see periodic completion notifications every 3-5 minutes
+- Agents complete immediately upon detecting activity (you get real-time notifications)
+- Each agent spawns a replacement before completing (continuous monitoring)
+- If idle, agents restart every 3-5 minutes
 - Session ID detection may require user input for `/watch` and `/send`
 - Large JSONL files may be slow to parse
 

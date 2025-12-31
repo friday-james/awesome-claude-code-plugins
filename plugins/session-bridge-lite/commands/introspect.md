@@ -40,28 +40,28 @@ prompt: |
   Target session: <CURRENT_SESSION_PATH>
 
   Instructions:
-  1. Read the session JSONL file using: tail -50 <SESSION_PATH>
-  2. Parse the JSON lines and identify recent messages
-  3. Every 30 seconds, check for new lines by comparing line count
-  4. When new activity is detected, summarize it:
-     - What did the user ask?
-     - What is the assistant doing?
-     - Any tools being used?
+  1. Read the session JSONL file: tail -50 <SESSION_PATH>
+  2. Count the number of lines (wc -l)
+  3. Wait 30 seconds
+  4. Check line count again
+  5. If line count increased, NEW ACTIVITY DETECTED:
+     a. Read the new lines and summarize:
+        === SESSION ACTIVITY [timestamp] ===
+        User: <summary of user message>
+        Assistant: <summary of assistant response>
+        Tools: <list of tools used>
 
-  Report format:
-  === SESSION ACTIVITY [timestamp] ===
-  User: <summary>
-  Assistant: <summary>
-  Tools: <list>
+     b. IMMEDIATELY spawn replacement watcher:
+        - Use Task tool with subagent_type: general-purpose, run_in_background: true
+        - Give it the EXACT same instructions
+        - Pass session: <CURRENT_SESSION_PATH>
 
-  5. After 10 checks (5 minutes), summarize what you observed
-  6. BEFORE completing, spawn a new watcher agent to continue monitoring:
-     - Use Task tool with subagent_type: general-purpose, run_in_background: true
-     - Give it the EXACT same instructions you received
-     - Pass the same session path: <CURRENT_SESSION_PATH>
-  7. After spawning replacement, complete and return your summary
+     c. Complete and return your activity report
 
-  This creates a self-perpetuating chain of watchers.
+  6. If NO new activity, repeat from step 3 (max 10 checks = 5 minutes)
+  7. After 10 checks with no activity, spawn replacement anyway and complete
+
+  CRITICAL: Spawn replacement IMMEDIATELY when you detect activity, don't wait!
 ```
 
 **Agent 2 - Poller (checks for incoming feedback):**
@@ -74,23 +74,28 @@ prompt: |
   Feedback file: ~/.claude-bridge-lite/feedback/<CURRENT_SESSION_ID>.json
 
   Instructions:
-  1. Check if the feedback file exists
-  2. If it exists, read and parse the JSON array
-  3. For each feedback item, report:
-     === FEEDBACK RECEIVED ===
-     Type: <type>
-     From: <sender>
-     Message: <content>
-  4. After reading, clear the file (write empty array [])
-  5. Wait 10 seconds and check again
-  6. After 20 checks (~3 minutes), summarize results
-  7. BEFORE completing, spawn a new poller agent to continue:
-     - Use Task tool with subagent_type: general-purpose, run_in_background: true
-     - Give it the EXACT same instructions you received
-     - Pass the same feedback file: ~/.claude-bridge-lite/feedback/<CURRENT_SESSION_ID>.json
-  8. After spawning replacement, complete and return your summary
+  1. Check if feedback file exists
+  2. If exists, read and parse JSON array
+  3. If feedback found (non-empty array):
+     a. Report each item:
+        === FEEDBACK RECEIVED ===
+        Type: <type>
+        From: <sender>
+        Message: <content>
 
-  This creates a self-perpetuating chain of pollers.
+     b. Clear the file: echo '[]' > <FEEDBACK_FILE>
+
+     c. IMMEDIATELY spawn replacement poller:
+        - Use Task tool with subagent_type: general-purpose, run_in_background: true
+        - Give it the EXACT same instructions
+        - Pass file: ~/.claude-bridge-lite/feedback/<CURRENT_SESSION_ID>.json
+
+     d. Complete and return your feedback report
+
+  4. If no feedback, wait 10 seconds and repeat (max 20 checks = 3 minutes)
+  5. After 20 checks with no feedback, spawn replacement anyway and complete
+
+  CRITICAL: Spawn replacement IMMEDIATELY when you detect feedback, don't wait!
 ```
 
 ### Step 4: Confirm launch
@@ -110,10 +115,9 @@ Share your session ID with collaborators:
   They can watch with: /watch <session-id>
   They can send feedback with: /send <message>
 
-The agents run in self-perpetuating chains:
-- Each agent works for ~3-5 minutes
-- Before completing, spawns a replacement
-- You'll see periodic reports as agents complete
+Agents spawn replacements immediately upon detecting activity:
+- You'll get real-time notifications when activity/feedback is detected
+- Agents auto-restart if idle for 3-5 minutes
 
 Commands while collaborating:
   /send <message>  - Send feedback to another session
@@ -125,4 +129,4 @@ Commands while collaborating:
 You MUST call the Task tool TWICE in a SINGLE response to spawn both agents in parallel.
 Use `run_in_background: true` for both agents so they run concurrently.
 
-The agents will spawn replacements indefinitely, creating continuous monitoring.
+The agents spawn replacements immediately upon detecting activity, ensuring real-time notifications.
