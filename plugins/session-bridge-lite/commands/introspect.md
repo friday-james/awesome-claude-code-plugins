@@ -1,5 +1,5 @@
 ---
-allowed-tools: Task, Read, Bash(mkdir:*), Bash(find:*), Bash(tail:*), Bash(sleep:*), Bash(test:*), Bash(cat:*), Bash(echo:*)
+allowed-tools: Task, Read, Bash(mkdir:*), Bash(find:*), Bash(tail:*), Bash(sleep:*), Bash(test:*), Bash(cat:*), Bash(echo:*), Bash(chmod:*)
 description: Start introspection - watch current session and poll for feedback (user)
 ---
 
@@ -27,15 +27,18 @@ subagent_type: general-purpose
 model: haiku
 run_in_background: true
 prompt: |
-  SESSION WATCHER - Stream with tail -f
+  SESSION WATCHER
 
   Session: <SESSION_PATH>
 
-  Run: tail -f <SESSION_PATH>
+  Create a bash script that runs tail -f on the session file forever, then run it in background:
 
-  This streams new lines as they're added. Analyze each line as it comes in.
-  Summarize activity (user messages, assistant actions, tool calls).
-  Run forever.
+  1. Write script to /tmp/session_watcher.sh:
+     - tail -f <SESSION_PATH>
+  2. chmod +x /tmp/session_watcher.sh
+  3. Run it with run_in_background: true
+
+  Complete after launching the background script.
 ```
 
 **Agent 2 - Poller:**
@@ -44,33 +47,37 @@ subagent_type: general-purpose
 model: haiku
 run_in_background: true
 prompt: |
-  FEEDBACK POLLER - Run forever
+  FEEDBACK POLLER
 
   Feedback file: ~/.claude-bridge-lite/feedback/<SESSION_ID>.json
 
-  Loop forever:
-  1. Read the feedback file
-  2. If non-empty array found:
-     - Print: === FEEDBACK RECEIVED === with content
-     - Clear file: echo '[]' > <file>
-  3. sleep 10
-  4. Repeat forever (never exit)
+  Create a bash script that polls forever, then run it in background:
+
+  1. Write script to /tmp/feedback_poller.sh:
+     - Loop forever
+     - Read feedback file
+     - If non-empty array: print content, clear file with echo '[]'
+     - sleep 10
+  2. chmod +x /tmp/feedback_poller.sh
+  3. Run it with run_in_background: true
+
+  Complete after launching the background script.
 ```
 
 ### Step 4: Display
 
 ```
-INTROSPECTION STARTED (haiku, forever)
-======================================
+INTROSPECTION STARTED (haiku)
+=============================
 Session ID: <id>
 
-Watcher: tail -f (streaming)
-Poller: Checking every 10s
+Watcher: tail -f as background shell (forever)
+Poller: Polling as background shell (forever)
 
-Use /tasks to see agents, kill to stop.
+Use /tasks to see background shells, kill to stop.
 ```
 
 ### Important
 
 Spawn BOTH agents with `run_in_background: true` and `model: haiku`.
-They run forever until manually killed.
+Agents should create bash scripts and run them as background shells, then complete.
