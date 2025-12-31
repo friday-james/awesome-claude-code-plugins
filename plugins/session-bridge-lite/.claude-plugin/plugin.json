@@ -1,0 +1,10 @@
+{
+  "name": "session-bridge-lite",
+  "description": "Lightweight session bridge using only built-in tools - no MCP server required",
+  "version": "1.0.0",
+  "author": {
+    "name": "njamez",
+    "url": "https://github.com/njamez"
+  },
+  "homepage": "https://github.com/ccplugins/awesome-claude-code-plugins/tree/main/plugins/session-bridge-lite"
+}

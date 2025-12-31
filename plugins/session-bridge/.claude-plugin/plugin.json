@@ -1,0 +1,10 @@
+{
+  "name": "session-bridge",
+  "description": "Bridge between Claude Code sessions for real-time collaboration and feedback",
+  "version": "1.0.0",
+  "author": {
+    "name": "njamez",
+    "url": "https://github.com/njamez"
+  },
+  "homepage": "https://github.com/ccplugins/awesome-claude-code-plugins/tree/main/plugins/session-bridge"
+}
