@@ -5,7 +5,7 @@ description: Show bridge status and session info
 
 ## Your task
 
-Display comprehensive status of the lite session bridge.
+Display comprehensive introspect status.
 
 ### Step 1: Find current session
 
@@ -32,8 +32,8 @@ For each, count pending items.
 ### Step 4: Display status
 
 ```
-SESSION BRIDGE LITE - STATUS
-============================
+INTROSPECT - STATUS
+===================
 
 Current Session:
   Path: <current-session-path>
@@ -53,6 +53,7 @@ Available Sessions:
   ...
 
 Commands:
+  /introspect          - Start introspection (watcher + poller)
   /watch <index|path>  - Watch a session
   /send <message>      - Send feedback
   /poll                - Check for feedback

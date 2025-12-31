@@ -1,8 +1,8 @@
-# Session Bridge Lite
+# Introspect
 
-Lightweight session bridge for Claude Code - **no MCP server required**.
+Session introspection for Claude Code - watch your own session and receive real-time feedback.
 
-Uses only Claude Code's built-in tools (Read, Write, Bash) to enable collaboration between sessions.
+**No MCP server required** - uses only Claude Code's built-in tools.
 
 ## How It Works
 
@@ -19,7 +19,7 @@ Uses only Claude Code's built-in tools (Read, Write, Bash) to enable collaborati
 /install-marketplace https://github.com/friday-james/awesome-claude-code-plugins
 
 # Install the plugin
-/install session-bridge-lite@awesome-claude-code-plugins
+/install introspect@awesome-claude-code-plugins
 ```
 
 ### Option 2: Copy commands to ~/.claude/commands/
@@ -29,19 +29,7 @@ Uses only Claude Code's built-in tools (Read, Write, Bash) to enable collaborati
 git clone https://github.com/friday-james/awesome-claude-code-plugins.git
 
 # Copy commands
-cp awesome-claude-code-plugins/plugins/session-bridge-lite/commands/*.md ~/.claude/commands/
-```
-
-### Option 3: Manual plugin install
-
-```bash
-# Create cache directory
-mkdir -p ~/.claude/plugins/cache/awesome-claude-code-plugins/session-bridge-lite/1.0.0
-
-# Copy plugin files
-cp -r plugins/session-bridge-lite/* ~/.claude/plugins/cache/awesome-claude-code-plugins/session-bridge-lite/1.0.0/
-
-# Add to installed_plugins.json (requires manual edit)
+cp awesome-claude-code-plugins/plugins/introspect/commands/*.md ~/.claude/commands/
 ```
 
 ## Commands
@@ -53,11 +41,11 @@ Start introspection mode - spawns background agents to watch the current session
 /introspect              # Watch current session, poll for feedback
 ```
 
-This spawns two background agents:
-1. **Watcher** - Monitors current session activity (~5 min)
-2. **Poller** - Checks for incoming feedback (~3 min)
+This spawns two background shells:
+1. **Watcher** - Streams session activity via `tail -f` (runs forever)
+2. **Poller** - Checks for incoming feedback every 10s (runs forever)
 
-When agents complete, you'll get a notification. Run `/introspect` again to restart.
+Use `/tasks` to see running shells and `kill` to stop them.
 
 ### /watch
 Watch another Claude session by reading its JSONL file.
@@ -113,8 +101,8 @@ Get recent activity from a watched session.
 
 ```
 > /status
-SESSION BRIDGE LITE - STATUS
-============================
+INTROSPECT - STATUS
+===================
 Current Session:
   ID: dev-session-123
   Path: ~/.claude/projects/.../dev-session-123.jsonl
@@ -184,19 +172,18 @@ Consider adding rate limiting to the login endpoint
 ]
 ```
 
-## Comparison with session-bridge (MCP version)
+## Comparison with codex-bridge (MCP version)
 
-| Feature | session-bridge-lite | session-bridge (MCP) |
-|---------|---------------------|----------------------|
-| Dependencies | None | codex-bridge MCP server |
+| Feature | introspect | codex-bridge (MCP) |
+|---------|------------|---------------------|
+| Dependencies | None | MCP server |
 | Setup | Just install plugin | Install MCP server + configure |
-| Real-time | Manual polling | Can be more responsive |
+| Real-time | Background shells (forever) | MCP polling |
 | Complexity | Simple | More features |
 | Portability | Works anywhere | Needs MCP support |
 
 ## Limitations
 
-- Agents run for 3-5 minutes then complete (run `/introspect` again to restart)
 - Session ID detection may require user input for `/watch` and `/send`
 - Large JSONL files may be slow to parse
 

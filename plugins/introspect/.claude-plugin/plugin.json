@@ -1,0 +1,9 @@
+{
+  "name": "introspect",
+  "description": "Session introspection - watch your own session and receive real-time feedback",
+  "version": "1.0.0",
+  "author": {
+    "name": "njamez"
+  },
+  "homepage": "https://github.com/friday-james/awesome-claude-code-plugins/tree/main/plugins/introspect"
+}
